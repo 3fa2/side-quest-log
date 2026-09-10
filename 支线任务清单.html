@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>支线任务清单 · Side Quest Log</title>
+<style>
+:root{
+  --bg:#0c0f14; --panel:#141a26; --panel2:#1b2333; --line:#263048;
+  --txt:#e8ecf5; --dim:#8b93a8; --gold:#e8b33c; --gold2:#f6d98a;
+  --green:#43d18a; --red:#ef6a6a; --blue:#5aa7ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 600px at 80% -10%,#182236 0%,var(--bg) 55%);
+  color:var(--txt);
+  font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;
+  min-height:100vh;padding:24px 16px 80px;
+}
+.wrap{max-width:1000px;margin:0 auto}
+.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.hd h1{font-size:27px;letter-spacing:1px;font-weight:800}
+.hd h1 small{color:var(--dim);font-size:12px;font-weight:500;letter-spacing:3px;margin-left:10px}
+.quote{color:var(--dim);font-size:13px;margin-top:6px;line-height:1.7}
+.countdown{margin:14px 0;padding:11px 18px;background:linear-gradient(90deg,rgba(232,179,60,.12),rgba(232,179,60,.03));border:1px solid rgba(232,179,60,.35);border-radius:10px;font-size:14px;color:var(--gold2)}
+.countdown b{font-size:19px;font-variant-numeric:tabular-nums;margin:0 4px}
+.countdown .warn{color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.stat .k{font-size:12px;color:var(--dim);margin-bottom:5px}
+.stat .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .v small{font-size:12px;color:var(--dim);font-weight:500;margin-left:3px}
+.progress{height:5px;background:#0a0d13;border-radius:3px;overflow:hidden;margin-top:8px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width .4s}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button{flex:1;padding:11px;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--dim);font-size:15px;cursor:pointer;transition:.15s}
+.tabs button.on{color:var(--txt);border-color:var(--gold);background:linear-gradient(180deg,rgba(232,179,60,.16),rgba(232,179,60,.05));box-shadow:0 0 12px rgba(232,179,60,.12)}
+.sec-t{font-size:13px;color:var(--dim);margin:18px 0 10px;display:flex;align-items:center;gap:8px}
+.sec-t::after{content:"";flex:1;height:1px;background:var(--line)}
+.mod-head{display:flex;align-items:center;gap:10px;margin:16px 0 10px;flex-wrap:wrap}
+.mod-head .badge{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#0c0f14}
+.mod-head .mt{font-size:17px;font-weight:700}
+.mod-head .msub{font-size:12px;color:var(--dim);margin-left:8px}
+.mod-head .mbar{flex:1;height:4px;background:#0a0d13;border-radius:2px;overflow:hidden;min-width:80px}
+.mod-head .mbar i{display:block;height:100%;background:var(--gold);border-radius:2px}
+.quest{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;transition:.15s}
+.quest:hover{border-color:#33405e}
+.quest.done{opacity:.5}
+.quest.done .qt{text-decoration:line-through}
+.quest.selected{border-color:rgba(232,179,60,.5);box-shadow:0 0 0 1px rgba(232,179,60,.25)}
+.qmain{flex:1;min-width:0}
+.qt{font-size:15px;font-weight:600;line-height:1.5}
+.qt .qno{color:var(--dim);font-weight:500;margin-right:6px;font-size:13px}
+.qd{font-size:13px;color:var(--dim);margin-top:4px;line-height:1.6}
+.qhow{margin-top:6px;font-size:12.5px;color:var(--gold2);line-height:1.7;background:rgba(232,179,60,.06);border-radius:8px;padding:6px 10px}
+.qhow b{color:var(--gold)}
+.qmeta{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--dim);white-space:nowrap}
+.tag.gold{color:var(--gold);border-color:rgba(232,179,60,.4)}
+.tag.green{color:var(--green);border-color:rgba(67,209,138,.4)}
+.tag.red{color:var(--red);border-color:rgba(239,106,106,.4)}
+.star{color:var(--gold);font-size:12px;letter-spacing:1px}
+.star .off{color:#3a4358}
+.qa{flex:none;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.btn{padding:5px 13px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font-size:13px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{border-color:var(--gold);color:var(--gold2)}
+.btn.gold{background:linear-gradient(180deg,#f0c14b,#d9a32c);color:#171204;border:none;font-weight:600}
+.btn.gold:hover{filter:brightness(1.08);color:#171204}
+.btn.green{color:var(--green);border-color:rgba(67,209,138,.45)}
+.btn.red{color:var(--red);border-color:rgba(239,106,106,.4)}
+.btn.ghost{color:var(--dim)}
+.chkline{font-size:12px;color:var(--dim);margin-top:8px;font-variant-numeric:tabular-nums}
+.empty{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:26px;text-align:center;color:var(--dim);font-size:14px;line-height:1.9}
+.footnote{margin-top:20px;padding:13px 18px;border-left:3px solid var(--gold);background:rgba(232,179,60,.06);color:var(--dim);font-size:13px;border-radius:0 10px 10px 0;line-height:1.8}
+.footer{margin-top:28px;text-align:center;color:#5b6377;font-size:12px;line-height:2}
+details.settings{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 16px;margin-bottom:16px}
+details.settings summary{cursor:pointer;color:var(--dim);font-size:13px}
+.set-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.set-row label{font-size:13px;color:var(--dim)}
+.set-row input{background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:6px 10px;font-size:13px}
+.log-item{display:flex;gap:10px;font-size:13px;color:var(--dim);padding:5px 0;line-height:1.6}
+.log-item .lt{flex:none;color:#5b6377;font-variant-numeric:tabular-nums}
+.log-item .lx{flex:1}
+.modal{position:fixed;inset:0;background:rgba(5,7,10,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal.on{display:flex}
+.mbox{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:22px;width:100%;max-width:500px;max-height:86vh;overflow:auto}
+.mbox h3{margin-bottom:14px;font-size:17px}
+.mbox label{display:block;font-size:13px;color:var(--dim);margin:12px 0 6px}
+.mbox input,.mbox select,.mbox textarea{width:100%;background:#10151f;border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:9px 12px;font-size:14px;font-family:inherit}
+.mbox textarea{resize:vertical;min-height:64px}
+.mrow{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+#toast{position:fixed;left:50%;bottom:32px;transform:translateX(-50%) translateY(80px);background:#1d2740;border:1px solid var(--gold);color:var(--gold2);padding:10px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:6px}
+.mini{background:#10151f;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--dim);line-height:1.5}
+.mini b{color:var(--txt);display:block;margin-bottom:2px}
+@media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.qa{flex-direction:row;flex-wrap:wrap;align-items:center}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hd">
+  <div>
+    <h1>支线任务清单 <small>SIDE QUEST LOG</small></h1>
+    <div class="quote">你的生活很无聊，因为它没有支线任务。你起床、工作、刷屏、睡觉。重复。没有风险，没有故事，没什么可跟别人说的。这里准备了 34 个支线任务，4 个月内完成。<b style="color:var(--gold2)">按模块选你想做的，真正去做。</b></div>
+  </div>
+</header>
+
+<div class="countdown" id="cdBox"></div>
+
+<div class="stats" id="statsBox"></div>
+
+<div class="tabs">
+  <button id="tabHall" class="on" onclick="switchTab('hall')">任务大厅 · 按模块自选</button>
+  <button id="tabMine" onclick="switchTab('mine')">我的任务</button>
+  <button id="tabStat" onclick="switchTab('stat')">统计与日志</button>
+</div>
+
+<details class="settings">
+  <summary>设置（截止日期 / 同时可接上限 / 备份）</summary>
+  <div class="set-row">
+    <label>截止日期 <input type="date" id="setDeadline"></label>
+    <label>同时最多接 <input type="number" id="setMax" min="1" max="10" style="width:62px"> 个</label>
+    <button class="btn" onclick="saveSettings()">保存</button>
+    <span style="flex:1"></span>
+    <button class="btn" onclick="exportData()">导出备份</button>
+    <button class="btn" onclick="document.getElementById('impFile').click()">导入备份</button>
+    <input type="file" id="impFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</details>
+
+<main>
+  <section id="viewHall"></section>
+  <section id="viewMine" hidden></section>
+  <section id="viewStat" hidden></section>
+</main>
+
+<div class="footnote">任务顺序不重要。截图里说：<b>选五个，真正去做。</b> 任务 34 是唯一重要的，其余 33 个只是通往它的途径。你可以随时在任务大厅换任务、放弃重选。</div>
+<div class="footer">数据保存在本机浏览器 localStorage，不联网、不上传。双击本文件即可使用。</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="mbox">
+    <h3 id="mTitle">添加自定义任务</h3>
+    <label>任务标题 *</label>
+    <input id="mTitleIn" placeholder="例如：连续30天早起">
+    <label>任务说明（可选）</label>
+    <textarea id="mDescIn" placeholder="具体做到什么程度"></textarea>
+    <label>具体做法（可选）</label>
+    <textarea id="mHowIn" placeholder="第一步怎么做、每天什么时候做"></textarea>
+    <label>分类</label>
+    <select id="mCatIn">
+      <option value="health">健康</option>
+      <option value="mind">心灵</option>
+      <option value="money">金钱</option>
+      <option value="social">人际</option>
+      <option value="adventure">冒险</option>
+      <option value="custom">自定义</option>
+    </select>
+    <label>难度</label>
+    <select id="mDiffIn">
+      <option value="1">★ 轻松</option>
+      <option value="2">★★ 中等</option>
+      <option value="3">★★★ 挑战</option>
+    </select>
+    <label>建议周期（天）</label>
+    <input id="mDaysIn" type="number" min="1" max="120" value="7">
+    <div class="mrow">
+      <button class="btn" onclick="closeModal()">取消</button>
+      <button class="btn gold" onclick="addQuest()">添加任务</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ========== 基础数据 ========== */
+var LS_KEY='sidequest_v2';
+var CATS={
+  health:{name:'健康',ch:'健',color:'#4ecdc4'},
+  mind:{name:'心灵',ch:'心',color:'#a78bfa'},
+  money:{name:'金钱',ch:'财',color:'#f5b03c'},
+  social:{name:'人际',ch:'情',color:'#f472b6'},
+  adventure:{name:'冒险',ch:'缘',color:'#60a5fa'},
+  custom:{name:'自定义',ch:'自',color:'#94a3b8'}
+};
+var CAT_ORDER=['health','mind','money','social','adventure','custom'];
+/* 34 个任务：cat,title,desc,how,diff(1-3),days */
+var SEED=[
+['health','全面血液检查','了解你真实的数字，而不是你的猜测。','约一次体检（医院/体检中心），做血常规+血脂+血糖+肝肾功能。拿到报告后预约医生逐项解读，把异常项记下来，定一个改善目标。',1,3],
+['health','连续14天保持相同就寝时间','给睡眠一个固定锚点。','选一个目标入睡时间（如23:30），提前1小时调暗灯光、放下手机，每天记录实际入睡时间，坚持14天不破例。',2,14],
+['health','30天不摄入种子油','大豆油、玉米油、葵花籽油、菜籽油都算。','改用橄榄油、黄油、椰子油、猪油做饭；买包装食品看配料表，含"植物油/精炼油"的避开；外食尽量选蒸煮炖。',3,30],
+['health','连续7天每天1万步','让身体每天有实实在在的活动量。','手机计步或手环，当天不足就晚饭后补走；把通勤、接电话、开会都变成走动机会。',2,7],
+['health','7天不饮酒','给肝脏放个假。','定一个7天窗口，用气泡水/茶代替酒精；推掉必要的酒局，并告诉朋友你在做这个挑战。',1,7],
+['health','一周内吃够30种不同植物','给肠道菌群办一场盛宴。','水果、蔬菜、豆类、全谷物、坚果、香料都算数；每天凑4-5种，记在备忘录里，凑满30种算完成。',2,7],
+['health','连续14天冷水浴','从每天晨冲开始。','温水洗澡最后20-60秒转冷水；慢慢加到2分钟；感受呼吸，别屏气；结束后做两组深呼吸。',3,14],
+['health','连续2周上午10点前不摄入咖啡因','咖啡因只配在你的清醒期后半段出现。','咖啡、茶、可乐、功能饮料全部推迟到10:00后；第一天会难受，准备一杯水+晨光+走动代替。',2,14],
+['mind','从头到尾读完一本书','读完，而不是读到一半。','选一本非工具书（小说/传记/历史都行），每天固定30分钟；用书签记录进度，读完写3句感想，才算出完成。',2,30],
+['mind','每天冥想5分钟，坚持21天','给大脑每天5分钟的静音。','固定时间（睡前/晨起），用冥想App或计时器，只数呼吸；走神了就拉回来，这是练习不是考试。',2,21],
+['mind','每天写下3件值得感激的事，坚持30天','训练大脑注意好事情。','睡前在手机备忘录或本子写3件今天的好事，具体到细节；一个月后回读一遍。',1,30],
+['mind','整整一天不使用手机','和数字世界断连24小时。','挑一个休息日，手机放进抽屉/交给家人，准备纸质替代（书、地图、清单）；提前告知重要联系人。',2,1],
+['mind','给自己写一封信，一年后打开','和未来的自己对话。','用纸笔，写给一年后的自己：现在的处境、担忧、希望；密封署名日期，放抽屉，定好1年后日历提醒。',1,1],
+['mind','每天20分钟学一项新技能，坚持30天','入门一项一直想学的。','选一项（外语/乐器/剪辑/写作），每天固定20分钟只学不刷；把大目标切成最小可执行动作。',3,30],
+['mind','删掉那个消耗你的App','你知道是哪一个。','列出耗时最多的App（屏幕时间/健康里可查），删除；需要时改从网页访问，给冲动设7天冷静期。',1,1],
+['money','连续30天记录每一笔开销','花出去的钱要有主人。','记一笔（记账App或微信记账），按餐食/交通/冲动消费等分大类；每周日晚盘点一次，挑出最大的可削减项。',2,30],
+['money','开始那个"一直说要开始"的副业','今天先开个头。','从最小可交付动作开始：注册账号、写第一条内容、准备第一个产品；只花30分钟，先跑起来。',3,30],
+['money','给那个能改变你职业生涯的人发消息','机会是聊出来的。','找一位你敬佩的行业内人士，写真诚的简短消息：说明你是谁、为何联系、请教一个具体问题；不要尬吹。',2,3],
+['money','存下你的第一笔紧急储备金','目标是月开销的3-6倍，先存1/4。','开一个单独的储蓄账户，发薪日自动转入固定金额；第一笔目标可以先定2000，别再转出。',1,7],
+['money','读一本个人理财的书','先有本金，后有生息。','豆瓣上选一本入门书（如《小狗钱钱》《金钱心理学》），两周内读完并整理10条行动清单。',1,14],
+['money','检查订阅，取消没用的','给账户排毒。','打开支付宝/微信/App Store的自动续费列表，逐项问"本月我用过吗"，没用的立刻取消，统计省下的钱。',1,1],
+['money','完成你的第一次线上销售','卖出一样东西。','闲鱼挂一件闲置、卖一包自制手工、开个付费咨询、接一个小单；定价、上架、收款，完整走一遍。',3,30],
+['social','给父母打一通真电话','不是发消息，是电话。','主动拨号，至少聊10分钟：问问近况、身体、最近一次开心的事；不匆匆挂断。',1,1],
+['social','告诉某人你为什么真正珍惜TA','把心里的感谢说出来。','选一个朋友/家人/同事，当面或电话说具体为什么珍惜：举一件真实的事，说它当时怎么影响你。',2,3],
+['social','认识一个生活与你完全不同的人','打破同温层。','去一次行业聚会、兴趣小组、志愿者活动，主动和至少一位不熟的人聊20分钟，记下TA的三个不同之处。',3,14],
+['social','向那个你一直逃避的人道歉','先把心结解开。','写清楚道歉原因，选当面或电话，只说"我的错+我的理解"，不辩解、不加戏，说完放下。',3,7],
+['social','真正约出那个总说"该见见"的朋友','别让友情停在收藏夹。','直接发日期+具体安排：「下周四晚七点，老地方吃饭」；不要用"有空吗"这种口头的。',1,7],
+['social','写下你在关系中真正想要的5个品质','不是将就，是标准。','静下心写5个你在人身上真正看重的品质，每条配一个具体的记忆场景；写完回头看看现在的关系圈。',1,1],
+['adventure','去一个从未去过的地方','离家近的也算数。','地图上圈一个没去过的地点：郊区/老街/一家店/一个公园；周末出发，至少呆2小时，不刷手机。',1,14],
+['adventure','吃一种从未尝过的东西','开一次新味觉。','挑一家没吃过的菜系或一种陌生食材；不要点招牌，点一个连名字都念不顺的。',1,7],
+['adventure','看一部你一无所知主题的纪录片','打开一扇未知的门。','从农业/深海/芯片/考古里选一个完全不认识的领域，找一部高分纪录片看完，并写下最大的三点认知。',1,7],
+['adventure','报名一件让你有点害怕的事','恐惧清单里划掉一条。','跑步/演讲/潜水/独自旅行……找一个"有点害怕但想试"的，去报个名，缴费或登记那一刻就破胆。',3,30],
+['adventure','去看一次日出，哪怕就一次','选一个清晨，早一点醒来。','查天气，提前一晚踩好点（山顶/江边/天台），日出前30分钟到，看完写下当时的心情，再补一觉。',2,7],
+['adventure','这个月做一件十年后你还会记得的事','任务34，是唯一重要的。','没有人能替你选；它可能是你怕的、你爱的、你欠自己的一场。把它写下来，拆成三步，今天走第一步。',3,60]
+];
+
+/* ========== 状态 ========== */
+function defaultState(){
+  var quests=SEED.map(function(s,i){return {id:'q'+(i+1),cat:s[0],title:s[1],desc:s[2],how:s[3],diff:s[4],days:s[5],builtin:true};});
+  return {ver:2,deadline:defaultDeadline(),maxActive:5,quests:quests,prog:{},log:[]};
+}
+function defaultDeadline(){
+  var d=new Date(); d.setMonth(d.getMonth()+4);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'T00:00:00';
+}
+function migrate(old){
+  /* v1 -> v2：旧任务没 how/diff/days，用内置库补齐；自定义的补默认值 */
+  var byId={}; old.quests.forEach(function(q){byId[q.id]=q;});
+  var seedMap={}; SEED.forEach(function(s,i){seedMap['q'+(i+1)]=s;});
+  var quests=old.quests.map(function(q){
+    var s=seedMap[q.id];
+    return {id:q.id,cat:q.cat,title:q.title,desc:q.desc||(s?s[2]:''),how:q.how||(s?s[3]:''),diff:q.diff||(s?s[4]:1),days:q.days||(s?s[5]:7),builtin:!!q.builtin};
+  });
+  return {version:2,deadline:old.deadline||defaultDeadline(),maxActive:old.maxActive||5,quests:quests,prog:old.prog||{},log:old.log||[]};
+}
+function load(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);
+    var s=JSON.parse(raw);
+    if(s&&s.quests&&s.quests.length) return migrate(s);
+  }catch(e){}
+  var raw1=null; try{raw1=localStorage.getItem('sidequest_v1');}catch(e){}
+  if(raw1){ try{var s1=JSON.parse(raw1); if(s1&&s1.quests&&s1.quests.length) return migrate(s1);}catch(e){} }
+  return defaultState();
+}
+function save(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
+var state=load();
+
+/* ========== 工具 ========== */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function findQ(id){for(var i=0;i<state.quests.length;i++)if(state.quests[i].id===id)return state.quests[i];return null;}
+function activeCount(){var n=0;for(var k in state.prog){var s=state.prog[k].status;if(s==='accepted'||s==='active')n++;}return n;}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove('show');},1900);}
+function addLog(x){state.log.unshift({t:new Date().toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}),x:x});if(state.log.length>60)state.log.length=60;}
+function starHtml(d){var s='';for(var i=1;i<=3;i++){s+=i<=d?'★':'☆';}return '<span class="star">'+s+'</span>';}
+
+/* ========== 渲染 ========== */
+function renderAll(){renderStats();renderHall();renderMine();renderStat();}
+function renderStats(){
+  var p=state.prog,done=0,act=0,abd=0;
+  for(var k in p){if(p[k].status==='done')done++;else if(p[k].status==='active')act++;else if(p[k].status==='abandoned')abd++;}
+  var total=state.quests.length,pct=Math.round(done/total*100);
+  document.getElementById('statsBox').innerHTML=
+    '<div class="stat"><div class="k">已接下</div><div class="v">'+activeCount()+'<small>/'+state.maxActive+'</small></div><div class="progress"><i style="width:'+Math.min(100,activeCount()/state.maxActive*100)+'%"></i></div></div>'+
+    '<div class="stat"><div class="k">已完成</div><div class="v" style="color:var(--green)">'+done+'<small>/'+total+'</small></div><div class="progress"><i style="width:'+pct+'%"></i></div></div>'+
+    '<div class="stat"><div class="k">进行中</div><div class="v" style="color:var(--gold)">'+act+'</div><div class="progress"></div></div>'+
+    '<div class="stat"><div class="k">已放弃</div><div class="v" style="color:var(--red)">'+abd+'</div><div class="progress"></div></div>'+
+    '<div class="stat"><div class="k">剩余时间</div><div class="v" style="color:var(--blue)">'+daysLeft()+'<small>天</small></div><div class="progress"><i style="width:'+timePct()+'%"></i></div></div>';
+  var cd=document.getElementById('cdBox');
+  cd.innerHTML=countdownHtml();
+}
+function daysLeft(){var d=new Date(state.deadline)-new Date();return Math.max(0,Math.ceil(d/864e5));}
+function timePct(){var d=new Date(state.deadline);var start=new Date();start.setMonth(start.getMonth()-4);var total=d-start,now=new Date()-start;return Math.max(0,Math.min(100,Math.round(now/total*100)));}
+function countdownHtml(){
+  var dl=new Date(state.deadline),now=new Date(),diff=dl-now;
+  if(diff<=0)return '<span class="warn">⏰ 已到截止时间，去设置里延长吧</span>';
+  var d=Math.floor(diff/864e5),h=Math.floor(diff%864e5/36e5);
+  return '⏳ 4个月目标窗口：截止 <b>'+dl.getFullYear()+'/'+(dl.getMonth()+1)+'/'+dl.getDate()+'</b> · 还剩 <b>'+d+'</b> 天 <b>'+h+'</b> 小时 · 完成进度 <b>'+doneCount()+'/'+state.quests.length+'</b>';
+}
+function doneCount(){var n=0;for(var k in state.prog)if(state.prog[k].status==='done')n++;return n;}
+function statusTag(s){
+  if(s==='accepted')return '<span class="tag">待开始</span>';
+  if(s==='active')return '<span class="tag gold">进行中</span>';
+  if(s==='done')return '<span class="tag green">已完成</span>';
+  if(s==='abandoned')return '<span class="tag red">已放弃</span>';
+  return '<span class="tag">未接</span>';
+}
+function questCard(q,idx){
+  var p=state.prog[q.id]||{status:'none',checkins:[]};
+  var cat=CATS[q.cat]||CATS.custom;
+  var cls=p.status==='done'?'quest done':(p.status==='accepted'||p.status==='active')?'quest selected':'quest';
+  var qa='';
+  if(p.status==='none'||p.status==='abandoned'){
+    qa='<button class="btn gold" onclick="acceptQuest(\''+q.id+'\')">'+(p.status==='abandoned'?'重新接下':'接下任务')+'</button>';
+  }else if(p.status==='accepted'){
+    qa='<button class="btn gold" onclick="startQuest(\''+q.id+'\')">开始</button><button class="btn red" onclick="abandonQuest(\''+q.id+'\')">放弃</button>';
+  }else if(p.status==='active'){
+    var chkT=p.checkins.indexOf(today())>=0;
+    qa='<button class="btn green" onclick="checkin(\''+q.id+'\')"'+(chkT?' disabled style="opacity:.4"':'')+'>打卡'+(chkT?'✓':'')+'</button><button class="btn gold" onclick="doneQuest(\''+q.id+'\')">完成</button><button class="btn red" onclick="abandonQuest(\''+q.id+'\')">放弃</button>';
+  }else if(p.status==='done'){
+    qa='<button class="btn ghost" onclick="undoDone(\''+q.id+'\')">撤销</button>';
+  }
+  if(!q.builtin)qa+='<button class="btn ghost" onclick="delQuest(\''+q.id+'\')">删</button>';
+  var chk='';
+  if(p.status==='active'&&p.checkins.length)chk='<div class="chkline">📌 已打卡 '+p.checkins.length+' 次 · 最近：'+esc(p.checkins.slice(-3).join('、'))+(q.days?' · 建议 '+q.days+' 天':'')+'</div>';
+  if(p.status==='done'&&p.doneAt)chk='<div class="chkline">✅ 完成于 '+esc(p.doneAt)+'</div>';
+  var how='';
+  if(q.how)how='<div class="qhow"><b>怎么做：</b>'+esc(q.how)+'</div>';
+  var qno='';
+  if(q.builtin&&q.id.indexOf('q')===0)qno='<span class="qno">#'+q.id.slice(1)+'</span>';
+  return '<div class="'+cls+'"><div class="qmain">'+
+    '<div class="qt">'+qno+esc(q.title)+'</div>'+
+    (q.desc?'<div class="qd">'+esc(q.desc)+'</div>':'')+how+
+    '<div class="qmeta"><span class="tag">'+cat.name+'</span>'+starHtml(q.diff)+'<span class="tag">⏱ '+q.days+' 天</span>'+statusTag(p.status)+'</div>'+chk+
+    '</div><div class="qa">'+qa+'</div></div>';
+}
+/* 任务大厅：按模块，自选 */
+function renderHall(){
+  var h='<div class="sec-t">任务大厅 · 34 个支线，按模块挑你想做的（上限 '+state.maxActive+' 个）</div>';
+  var groups={};
+  state.quests.forEach(function(q){(groups[q.cat]=groups[q.cat]||[]).push(q);});
+  var totalSel=activeCount();
+  CAT_ORDER.forEach(function(cat){
+    var list=groups[cat];if(!list||!list.length)return;
+    var done=0,sel=0;
+    list.forEach(function(q){var s=state.prog[q.id];if(s){if(s.status==='done')done++;if(s.status==='accepted'||s.status==='active')sel++;}});
+    h+='<div class="mod-head"><div class="badge" style="background:'+CATS[cat].color+'">'+CATS[cat].ch+'</div>'+
+      '<div class="mt">'+CATS[cat].name+'支线</div>'+
+      '<div class="msub">已选 '+sel+' / 完成 '+done+'</div>'+
+      '<div class="mbar"><i style="width:'+Math.min(100,Math.round((sel+done)/(list.length||1)*100))+'%"></i></div></div>';
+    list.forEach(function(q,i){h+=questCard(q,i);});
+  });
+  h+='<div class="sec-t">还差一个想做但没在列表里的？</div>'+
+    '<div class="empty" style="cursor:pointer" onclick="openModal()">+ 添加自定义任务</div>';
+  document.getElementById('viewHall').innerHTML=h;
+}
+/* 我的任务 */
+function renderMine(){
+  var taken=[],done=[],abd=[];
+  for(var k in state.prog){var p=state.prog[k],q=findQ(k);if(!q)continue;if(p.status==='accepted'||p.status==='active')taken.push(q);else if(p.status==='done')done.push(q);else if(p.status==='abandoned')abd.push(q);}
+  taken.sort(function(a,b){var sa=state.prog[a.id].status==='active'?0:1,sb=state.prog[b.id].status==='active'?0:1;return sa-sb;});
+  var h='';
+  if(!taken.length&&!done.length){
+    h='<div class="empty">你还没有接下任何任务。<br>去任务大厅，从 5 大模块里<b style="color:var(--gold)"> 挑 5 个</b>，真正去做。<br><button class="btn gold" style="margin-top:14px" onclick="switchTab(\'hall\')">打开任务大厅</button></div>';
+  }else{
+    if(taken.length){h+='<div class="sec-t">📋 已接任务 · '+taken.length+'</div>';taken.forEach(function(q){h+=questCard(q);});}
+    if(done.length){h+='<div class="sec-t">✅ 已完成 · '+done.length+'</div>';done.forEach(function(q){h+=questCard(q);});}
+    if(abd.length){h+='<div class="sec-t">↩ 已放弃 · '+abd.length+'</div>';abd.forEach(function(q){h+=questCard(q);});}
+  }
+  document.getElementById('viewMine').innerHTML=h;
+}
+/* 统计页 */
+function renderStat(){
+  var h='<div class="sec-t">模块进度</div>';
+  var groups={};
+  state.quests.forEach(function(q){(groups[q.cat]=groups[q.cat]||[]).push(q);});
+  CAT_ORDER.forEach(function(cat){
+    var list=groups[cat];if(!list||!list.length)return;
+    var done=0;list.forEach(function(q){if(state.prog[q.id]&&state.prog[q.id].status==='done')done++;});
+    h+='<div class="quest"><div class="qmain"><div class="qt">'+CATS[cat].name+'</div>'+
+      '<div class="qmeta"><span class="tag">'+done+' / '+list.length+' 完成</span><span class="tag">'+Math.round(done/list.length*100)+'%</span></div>'+
+      '<div class="progress" style="margin-top:8px"><i style="width:'+Math.round(done/list.length*100)+'%"></i></div>'+
+      '<div class="mini-grid">'+list.map(function(q){
+        var st=state.prog[q.id]?state.prog[q.id].status:'none';
+        return '<div class="mini"><b>'+esc(q.title)+'</b>'+({none:'未接',accepted:'已接·待开始',active:'进行中',done:'✅ 已完成',abandoned:'已放弃'})[st]+'</div>';
+      }).join('')+'</div></div></div>';
+  });
+  h+='<div class="sec-t">成就日志</div>';
+  if(state.log.length){
+    h+='<div class="quest"><div class="qmain">'+state.log.slice().reverse().map(function(e){return '<div class="log-item"><span class="lt">'+esc(e.t)+'</span><span class="lx">'+esc(e.x)+'</span></div>';}).join('')+'</div></div>';
+  }else{
+    h+='<div class="empty">还没有任何记录，去接下第一个任务吧。</div>';
+  }
+  document.getElementById('viewStat').innerHTML=h;
+}
+function switchTab(which){
+  document.getElementById('tabHall').classList.toggle('on',which==='hall');
+  document.getElementById('tabMine').classList.toggle('on',which==='mine');
+  document.getElementById('tabStat').classList.toggle('on',which==='stat');
+  document.getElementById('viewHall').hidden=which!=='hall';
+  document.getElementById('viewMine').hidden=which!=='mine';
+  document.getElementById('viewStat').hidden=which!=='stat';
+}
+
+/* ========== 操作 ========== */
+function acceptQuest(id){
+  if(activeCount()>=state.maxActive){toast('同时最多接 '+state.maxActive+' 个，先去「我的任务」完成或放弃一个');return;}
+  var p=state.prog[id]||{status:'none',checkins:[]};
+  p.status='accepted';state.prog[id]=p;addLog('接下任务：'+findQ(id).title);save();renderAll();toast('已接下「'+findQ(id).title+'」');
+}
+function startQuest(id){
+  var p=state.prog[id];if(!p)return;
+  p.status='active';addLog('开始执行：'+findQ(id).title);save();renderAll();toast('开始执行，加油！');
+}
+function checkin(id){
+  var p=state.prog[id];if(!p)return;
+  if(p.checkins.indexOf(today())>=0){toast('今天已经打过卡了');return;}
+  p.checkins.push(today());save();renderAll();toast('打卡成功 +1 天');
+}
+function doneQuest(id){
+  var q=findQ(id);if(!confirm('确认完成「'+q.title+'」？'))return;
+  var p=state.prog[id];p.status='done';p.doneAt=today();addLog('🎉 完成：'+q.title);save();renderAll();toast('恭喜完成一个支线任务！');
+}
+function undoDone(id){
+  var p=state.prog[id];if(!p)return;
+  p.status='active';p.doneAt=null;save();renderAll();toast('已撤销完成，回到进行中');
+}
+function abandonQuest(id){
+  var q=findQ(id);if(!confirm('确定放弃「'+q.title+'」？放弃后需重新接取。'))return;
+  var p=state.prog[id];if(p){p.status='abandoned';p.checkins=[];addLog('放弃任务：'+q.title);save();renderAll();toast('已放弃');}
+}
+
+/* ========== 自定义 & 设置 ========== */
+function openModal(){document.getElementById('modal').classList.add('on');}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function addQuest(){
+  var t=document.getElementById('mTitleIn').value.trim();
+  if(!t){toast('标题不能为空');return;}
+  var id='c'+Date.now();
+  state.quests.push({id:id,cat:document.getElementById('mCatIn').value,title:t,
+    desc:document.getElementById('mDescIn').value.trim(),
+    how:document.getElementById('mHowIn').value.trim(),
+    diff:parseInt(document.getElementById('mDiffIn').value,10)||1,
+    days:parseInt(document.getElementById('mDaysIn').value,10)||7,
+    builtin:false});
+  save();closeModal();
+  ['mTitleIn','mDescIn','mHowIn'].forEach(function(x){document.getElementById(x).value='';});
+  renderAll();toast('已添加自定义任务');
+}
+function delQuest(id){
+  var q=findQ(id);if(!q||q.builtin)return;
+  if(!confirm('确定删除「'+q.title+'」？'))return;
+  state.quests=state.quests.filter(function(x){return x.id!==id;});
+  delete state.prog[id];save();renderAll();toast('已删除');
+}
+function saveSettings(){
+  var dl=document.getElementById('setDeadline').value;
+  var mx=parseInt(document.getElementById('setMax').value,10);
+  if(dl)state.deadline=dl+'T00:00:00';
+  if(mx>=1&&mx<=10)state.maxActive=mx;
+  save();renderStats();toast('设置已保存');
+}
+function exportData(){
+  var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sidequest-backup-'+today()+'.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importData(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){try{var s=JSON.parse(r.result);if(!s.quests||!s.prog)throw 0;state=migrate(s);save();renderAll();toast('备份已导入');}catch(e){toast('导入失败：不是有效的备份文件');}};
+  r.readAsText(f);ev.target.value='';
+}
+
+/* ========== 初始化 ========== */
+document.getElementById('setDeadline').value=state.deadline.slice(0,10);
+document.getElementById('setMax').value=state.maxActive;
+renderAll();
+setInterval(renderStats,60000);
+</script>
+</body>
+</html>
