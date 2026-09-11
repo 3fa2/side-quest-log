@@ -3,10 +3,10 @@ AIGC:
   ContentProducer: '001191110102MAD55U9H0F10002'
   ContentPropagator: '001191110102MAD55U9H0F10002'
   Label: '1'
-  ProduceID: '0fd924c8-c659-4ee9-bb4d-97ec157e32b5'
-  PropagateID: '0fd924c8-c659-4ee9-bb4d-97ec157e32b5'
-  ReservedCode1: '36f544c0-da16-4b50-ac1b-4e5815d87e78'
-  ReservedCode2: '36f544c0-da16-4b50-ac1b-4e5815d87e78'
+  ProduceID: '7b27dfd4-f380-47e6-a207-b5c719fc51d4'
+  PropagateID: '7b27dfd4-f380-47e6-a207-b5c719fc51d4'
+  ReservedCode1: '669afe29-c3f4-48d8-81cb-f19034644e1f'
+  ReservedCode2: '669afe29-c3f4-48d8-81cb-f19034644e1f'
 ---
 
 # 支线任务清单 · Side Quest Log
